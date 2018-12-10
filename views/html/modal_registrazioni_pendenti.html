@@ -1,0 +1,77 @@
+<html>
+<body>
+    <div class="modal fade" id="registrazioni_pendenti" role="dialog">
+        <script>
+            var datatable_studenti;
+            $(document).ready(function () {
+              table_registrazioni_pendenti = $('#table_registrazioni_pendenti').DataTable(); //End datatable
+                //Table events binding
+                $('#table_registrazioni_pendenti tbody').on('click', 'tr', function () {
+                    var data = datatable_studenti.row(this).data();
+                    //Open form variing data
+                });
+
+            });
+
+            //Loading data from server
+            $("#find").click(function () {
+              table_registrazioni_pendenti.clear().draw();
+                console.log("Loading data from server");
+                $.ajax({
+                    url: '../../actions/database/get_registrazioni_pendenti.php', method: 'POST',
+                    success: function (response) {
+                        response.forEach(element => {
+                          table_registrazioni_pendenti.row.add([
+                                element.id,
+                                element.nome,
+                                element.cognome,
+                                element.cod_fisc,
+                                element.sez,
+                                element.cl,
+                                element.email_gen,
+                                element.telefono_gen,
+                            ]).draw();
+                        });
+                    },
+                    error: function (response) { console.log("Search fail."); }
+                });
+            });
+
+        </script>
+
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="width: 1200px;">
+                <!-- Header-->
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrazioni pendenti o non attive</h5>
+                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>
+                </div>
+
+                <!-- Body-->
+                <div class="modal-body">
+                    <table id="table_registrazioni_pendenti" class="display">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Nome</th>
+                                <th>Cognome</th>
+                                <th>Cod. Fiscale</th>
+                                <th>Sezione</th>
+                                <th>Classe</th>
+                                <th>Email</th>
+                                <th>Telefono</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                <!-- Footer-->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,80 @@
+<html>
+<body>
+    <div class="modal fade" id="anagrafiche_genitori" role="dialog">
+        <script>
+            var datatable_genitori;
+            $(document).ready(function () {
+                datatable_genitori = $('#table_genitori').DataTable(); //End datatable
+                //Table events binding
+                $('#table_genitori tbody').on('click', 'tr', function () {
+                    var data = datatable_genitori.row(this).data();
+                    //Open form variing data
+                    console.log(data);
+                });
+
+            });
+
+            //Loading data from server
+            $("#find").click(function () {
+                datatable_genitori.clear().draw();
+                console.log("Loading data from server");
+                $.ajax({
+                    url: '../../actions/database/get_genitori.php', method: 'POST',
+                    success: function (response) {
+                        response.forEach(element => {
+                            datatable_genitori.row.add([
+                                element.id,
+                                element.cognome+" "+element.nome,
+                                element.cl + element.sez,
+                                element.cf_pa,
+                                element.telefono_pa,
+                                element.email_pa,
+                                element.cf_ma,
+                                element.email_ma,
+                                element.telefono_ma,
+                            ]).draw();
+                        });
+                    },
+                    error: function (response) { console.log("Search students fail."); }
+                });
+            });
+
+        </script>
+
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 1500px;">
+                <!-- Header-->
+                <div class="modal-header">
+                    <h5 class="modal-title">Anagrafica Genitori</h5>
+                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>
+                </div>
+
+                <!-- Body-->
+                <div class="modal-body">
+                    <table id="table_genitori" class="display">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Cognome e nome</th>
+                                <th>Classe e sezione</th>
+                                <th>C.F. Padre</th>
+                                <th>Telefono Padre</th>
+                                <th>Email Padre</th>
+                                <th>C.F. Madre</th>
+                                <th>Telefono Madre</th>
+                                <th>Email Madre</th>                                
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                <!-- Footer-->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+
+/* correction black background on modal dialog */
+.modal-backdrop {
+    /* bug fix - no overlay */    
+    display: none;    
+}

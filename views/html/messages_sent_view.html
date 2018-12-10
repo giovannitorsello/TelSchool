@@ -1,0 +1,53 @@
+<html>
+
+<body>
+    <div id="messages_sent_view">
+        <script>
+            var table_message_sent;
+            $(document).ready(function () {
+                table_message_sent = $('#table_message_sent').DataTable(); //End datatable
+                //Table events binding
+                $('#table_message_sent').on('click', 'tr', function () {
+                    var data = datatable_genitori.row(this).data();
+                    //Open form variing data
+                    console.log(data);
+                });
+
+            });
+
+            //Loading data from server
+            $("#find_messages").click(function () {
+                table_message_sent.clear().draw();
+                console.log("Loading data from server");
+                $.ajax({
+                    url: '../../actions/database/get_messages.php', method: 'POST',
+                    success: function (response) {
+                        console.log(response);
+                        /*response.forEach(element => {
+                            /*table_message_sent.row.add([
+
+                            ]).draw();
+                        });*/
+                    },
+                    error: function (response) { console.log("Search fail."); }
+                });
+            });
+
+        </script>
+
+        <button id="find_messages" type="button" class="btn btn-secondary">Cerca</button>
+        <table id="table_message_sent" class="display">
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Data</th>
+                    <th>Testo</th>
+                    <th>Destinatari</th>
+                </tr>
+            </thead>
+        </table>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,231 @@
+<html>
+
+<body>
+    <div id="registrazioni_manuali" class="modal fade" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 1000px;">
+                <!-- Header-->
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrazione manuale utente</h5>
+                </div>
+
+                <!-- Body-->
+                <div class="modal-body">
+                    <form class="form-signin" id="register_form">
+                        <h4 class="form-signin-heading">Registrazione</h4>
+                        <fieldset>
+                            <label>Dati anagrafici</label>
+                            <div class='row'>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <select class="form-control" id="role" name="role" required>
+                                            <option></option>
+                                            <option>studente</option>
+                                            <option>genitore</option>
+                                            <option>dipendente</option>
+                                        </select>
+                                        <small id="ruoloHelp" class="form-text text-muted">Ruolo utente</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="cod_fisc" class="sr-only">Nome</label>
+                                        <input id="cod_fisc" name="cod_fisc" class="form-control" placeholder="Codice Fiscale"
+                                            type="text">
+                                        <small id="nomeHelp" class="form-text text-muted">Nome utente del servizio</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="nome" class="sr-only">Nome</label>
+                                        <input id="nome" name="nome" class="form-control" placeholder="nome" type="text">
+                                        <small id="nomeHelp" class="form-text text-muted">Nome utente del servizio</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="cognome" class="sr-only">Cognome</label>
+                                        <input id="cognome" name="cognome" class="form-control" placeholder="cognome"
+                                            type="text">
+                                        <small id="cognomeHelp" class="form-text text-muted">Cognome utente del
+                                            servizio</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class='row'>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="dat_nas" class="sr-only">Data di nascita</label>
+                                        <input id="dat_nas" name="dat_nas" class="form-control" placeholder="data di nascita"
+                                            type="text">
+                                        <small id="dat_nasHelp" class="form-text text-muted">Inserire data di nascita
+                                            dd/mm/yyyy</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="com_nas" class="sr-only">Comune di nascita</label>
+                                        <input id="com_nas" name="com_nas" class="form-control" placeholder="comune di nascita"
+                                            type="text">
+                                        <small id="com_nasHelp" class="form-text text-muted">Inserire comune di nascita</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="pro_nas" class="sr-only">Provincia di nascita</label>
+                                        <input id="pro_nas" name="pro_nas" class="form-control" placeholder="Provincia di nascita"
+                                            type="text">
+                                        <small id="pro_nasHelp" class="form-text text-muted">Inserire provincia di
+                                            nascita</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+
+
+                        <fieldset>
+                            <label>Residenza</label>
+                            <div class='row'>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="res_com" class="sr-only">Comune di residenza</label>
+                                        <input id="res_com" name="res_com" class="form-control" placeholder="comune di residenza"
+                                            type="text">
+                                        <small id="res_comHelp" class="form-text text-muted">Comune di residenza</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="res_ind" class="sr-only">Indirizzo di residenza</label>
+                                        <input id="res_ind" name="res_ind" class="form-control" placeholder="Indirizzo di residenza"
+                                            type="text">
+                                        <small id="res_indHelp" class="form-text text-muted">Indirizzo di residenza</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="res_cap" class="sr-only">CAP di residenza</label>
+                                        <input id="res_cap" name="res_cap" class="form-control" placeholder="CAP di residenza"
+                                            type="text">
+                                        <small id="res_capHelp" class="form-text text-muted">CAP di residenza</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="res_pro" class="sr-only">Provincia di residenza</label>
+                                        <input id="res_pro" name="res_pro" class="form-control" placeholder="Provincia di residenza"
+                                            type="text">
+                                        <small id="res_proHelp" class="form-text text-muted">Provincia di residenza</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="fieldset_classe_sezione">
+                            <label>Dati classe/sezione</label>
+                            <div class='row'>
+                                <div class='col-sm-2'>
+                                    <div class="form-group" id="frm_grp_classe">
+                                        <label for="classe" class="sr-only">Classe</label>
+                                        <input id="classe" name="classe" class="form-control" placeholder="classe" type="text">
+                                        <small id="codfisHelp" class="form-text text-muted">Anno di corso</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-2'>
+                                    <div class="form-group" id="frm_grp_sezione">
+                                        <label for="sezione" class="sr-only">Sezione</label>
+                                        <input id="sezione" name="sezione" class="form-control" placeholder="sezione"
+                                            type="text">
+                                        <small id="codfisHelp" class="form-text text-muted">Sezione</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <fieldset id="fieldset_associazione_parentela">
+                            <label>Associazione di parentela</label>
+                            <div class="form-group" id="frm_grp_codfis_studente">
+                                <label for="cod_fis_par" class="sr-only">Codici fiscali associati</label>
+                                <input id="cod_fis_par" name="cod_fis_par" class="form-control" placeholder="codice fiscale parente (figlio/genitore) o lista separata da virgola"
+                                    type="text">
+                                <small id="codfisHelp" class="form-text text-muted">Codice fiscale in maiuscolo dello
+                                    studente o lista separata da virgola</small>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
+                            <label>Contatti</label>
+                            <div class='row'>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="email" class="sr-only">Email</label>
+                                        <input type="email" id="email" class="form-control" placeholder="email" name="email"
+                                            required value="giovanni.torsello@gmail.com">
+                                        <small id="emailHelp" class="form-text text-muted">Email utente</small>
+                                    </div>
+                                </div>
+                                <div class='col-sm-4'>
+                                    <div class="form-group">
+                                        <label for="phone" class="sr-only">Telefono</label>
+                                        <input type="phone" id="phone" class="form-control" placeholder="telefono" name="phone" required value="3939241987">
+                                        <small id="phoneHelp" class="form-text text-muted">Telefono utente</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>                        
+                    </form>
+                    <button id="btn_registra_utente" class="btn btn-login" value="Registra utente">Registra</button>
+                </div>
+
+                <!-- Footer-->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            $("#btn_registra_utente").click(function () {
+                console.log("Insert user in database");
+                $.ajax({
+                    type: 'post',
+                    url: '/insert/customer',
+                    data: $('#register_form').serialize(),
+                    success: function (response) {
+                        console.log(response);
+                        response=JSON.parse(response);
+                        console.log(response);
+                        if(response.status==="ok")
+                            window.confirm(response.msg);
+                        else
+                            window.alert(response.msg);
+                    },
+                    error: function (response) { console.log("Insert fail."); }
+                });
+            });
+
+            $('#role').change(function () {
+                $(this).find(":selected").each(function () {
+                    var ruolo = $(this).val();
+                    if (ruolo == "dipendente") {
+                        $("#fieldset_associazione_parentela").hide(true);
+                        $("#fieldset_classe_sezione").hide(true);                        
+                    }
+                    else if (ruolo == "genitore") {
+                        $("#fieldset_associazione_parentela").show(true);
+                        $("#fieldset_classe_sezione").show(true);
+                    }
+                    else if (ruolo == "studente") {
+                        $("#fieldset_classe_sezione").show(true);
+                        $("#fieldset_associazione_parentela").show(true);
+                    }
+                });
+            });
+
+        </script>
+
+    </div>
+</body>
+
+</html>

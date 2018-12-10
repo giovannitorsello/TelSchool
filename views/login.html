@@ -1,0 +1,41 @@
+<html lang="it">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport"       content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description"    content="">
+        <meta name="author"         content="">
+        <link rel="icon"            href="#">
+        <title>TelSchool Login</title>
+
+        <link href="static/css/main.css"              rel="stylesheet" type="text/css">
+        <link href="static/css/starter-template.css"  rel="stylesheet" type="text/css">
+        <link href="static/css/sticky-footer.css"     rel="stylesheet" type="text/css">    
+        <link href="static/css/bootstrap.min.css"     rel="stylesheet" type="text/css"> 
+    
+        <script src="static/js/jquery-3.3.1.min.js"></script>
+        <script src="static/js/popper.min.js"></script>
+        <script src="static/js/bootstrap.min.js"></script>
+        <!-- Javascript routing cryptography and form parsing -->
+        <script src="static/js/sha512.js"></script>
+        <script src="static/js/login_form.js"></script>
+    </head>
+    <body>
+        <div class="container">
+            <form class="form-signin" method="post" name="login_form" action="/login">
+                <h2 class="form-signin-heading">TelSchool</h2>
+                <label for="username" class="sr-only">Email</label>
+                <input type="text"      id="username"   name="username" class="form-control" placeholder="Username" required autofocus>
+            
+                <label for="password" class="sr-only">Password</label>
+                <input type="password"  id="password"   name="password" class="form-control" placeholder="Password" required>
+                <button class="btn btn-lg btn-primary btn-block" type="button" value="Login" onclick="formhash(this.form, this.form.password);">Accedi</button>
+            </form>
+        </div> <!-- /container -->
+
+        <footer class="footer">
+            <div class="container">
+                <span class="text-muted">&copy; 2018 StuSend - Realizzato <a href="https://www.linkedin.com/in/francesco-carratta-7a03a6156/">Francesco Carratta</a> </span>
+            </div>
+        </footer>
+    </body>
+</html>

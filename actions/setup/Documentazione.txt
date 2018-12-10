@@ -1,0 +1,19 @@
+﻿
+Se vuoi eseguire dei test queste sono le password:
+UTENTE SUPERUSER(CON PRIVILEGI SPECIALI):
+email: test@example.com
+password : 6ZaxN2Vzm9NUJT2y
+
+UTENTE NONSUPERUSER:
+email: test3@example.com
+password : test3
+
+Aggiornamenti
+- modificato il refresh.php
+- invertita la label sezioni e classi
+- modificata la lista sezioni attraverso una query che cerca le sezioni nel database
+- aggiunto l'attributo "superuser" a members, ovvero un carattere che permtterà di eseguire azioni privilegiate(es. registrazione)
+- aggiunto il bottone di logout
+- aggiunta la registrazione di nuovi utenti
+- modificato il colore del background e aggiunti nuovi pannelli info (registrazione)
+

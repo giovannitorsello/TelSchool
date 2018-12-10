@@ -1,0 +1,79 @@
+<html>
+
+<body>
+    <div class="modal fade" id="anagrafiche_dipendenti" role="dialog">
+
+        <script>
+            var datatable_dipendenti;
+            $(document).ready(function () {
+                datatable_dipendenti = $('#table_dipendenti').DataTable(); //End datatable
+                //Table events binding
+                $('#table_dipendenti tbody').on('click', 'tr', function () {
+                    var data = datatable_dipendenti.row(this).data();
+                    //Open form variing data
+                    $("#registrazioni_manuali").modal();
+                    //call function to load data
+                    console.log(data);
+                });
+
+            });
+
+            //Loading data from server
+            $("#find").click(function () {
+                datatable_dipendenti.clear().draw();
+                console.log("Loading data from server");
+                $.ajax({
+                    url: '/search/dipendenti', type: 'POST',
+                    success: function (response) {
+                        response.data.forEach(element => {
+                            datatable_dipendenti.row.add([
+                                element.id,
+                                element.cognome + " " + element.nome,
+                                element.cod_fisc,
+                                element.email,
+                                element.phone,
+                                element.res_ind + ", " + element.res_cap + element.res_com + ", " + element.res_pro
+                            ]).draw();
+                        });
+                    },
+                    error: function (response) { console.log("Search fail."); }
+                });
+            });
+
+        </script>
+        <div class="modal-dialog" role="document">
+            <div class="modal-content" style="width: 1500px;">
+                <!-- Header-->
+                <div class="modal-header">
+                    <h5 class="modal-title">Anagrafica Dipendenti</h5>
+                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>
+                </div>
+
+
+                <!-- Body-->
+                <div class="modal-body">
+                    <table id="table_dipendenti" class="display">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Cognome e nome</th>
+                                <th>Codice Fiscale</th>
+                                <th>Telefono</th>
+                                <th>Email</th>
+                                <th>Indirizzo</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+
+                <!-- Footer-->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

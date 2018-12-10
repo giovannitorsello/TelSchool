@@ -1,0 +1,131 @@
+<html>
+
+<body>
+    <div class="modal fade" id="anagrafiche_dipendenti" role="dialog">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <!-- Header-->
+                <div class="modal-header">
+                    <h5 class="modal-title">Invio messaggio</h5>
+                </div>
+
+                <!-- Body-->
+                <div class="modal-body">
+                    <!-- FORM DI INVIO MESSAGGIO-->
+                    <form action="./destinatari.php" method="post" enctype="multipart/form-data" name="send">
+                        <!-- zona file invio e browse -->
+                        <div class="row">
+                            <div class="col-sm">
+                                <input type="file" name="file" id="file" required />
+                            </div>
+
+                            <div class="col-md-13">
+                                <div class="form-group label-floating">
+                                    <input type="text" class="form-control" name="filepdf" id="namefile" placeholder="Inserisci il nome della circolare..."
+                                        required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- scrittura messaggio -->
+                        <div class="row">
+                            <div class="col-md-13">
+                                <div class="form-group">
+                                    <label for="Messaggio">Messaggio:</label>
+                                    <textarea class="form-control" rows="5" id="messaggio" name="messaggio" placeholder="Inserisci il messaggio da inviare ... "
+                                        required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- filtri per i destinatari -->
+                        <div class="row">
+                            <div class="col-md-3">
+                                <!--?php include_once './snipsets/categorie_utenti.php' ?-->
+                            </div>
+                            <!-- Colonna sezioni -->
+                            <div class="col-md-3">
+                                <!--?php include_once './snipsets/sezioni_scuola.php' ?-->
+                            </div>
+                            <div class="col-md-3">
+                                <!--?php include_once './snipsets/classi_scuola.php' ?-->
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary pull-right" onclick="return validateForm(this.form)">Invia
+                            Messaggio</button>
+                    </form>
+                </div>
+
+                <!-- Footer-->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!----- Gestione Eventi pagina ---->
+    <script type="text/javascript">
+
+        //validazione dati per l'invio
+        function validateForm(form) {
+            var sezioni = [];
+            var classi = [];
+            var tipologie_destinatari = [];
+            //Trova le sezioni selezionate
+            $('.sezioni').each(function (index, element) {
+                if (element.type == 'checkbox') {
+                    if (element.checked) sezioni.push(element.id);
+                }
+            });
+            //Trova le classi selezionate
+            $('.classi').each(function (index, element) {
+                if (element.type == 'checkbox') {
+                    if (element.checked) classi.push(element.id);
+                }
+            });
+            //Trova le tipologie destinatari selezionate
+            $('.tipologie_utenti').each(function (index, element) {
+                if (element.type == 'checkbox') {
+                    if (element.checked) tipologie_destinatari.push(element.id);
+                }
+            });
+            console.log(sezioni);
+            console.log(classi);
+            console.log(tipologie_utenti);
+            var messaggio = {};
+            messaggio.sezioni = sezioni;
+            messaggio.classi = classi;
+            messaggio.tipologie_destinatari = tipologie_destinatari;
+            messaggio.testo = $("#messaggio").val();
+
+            var json_messaggio = JSON.stringify(messaggio);
+            $('#messaggio').val(json_messaggio);
+
+            var check1 = array_isnotempty(sezioni);
+            var check2 = array_isnotempty(classi);
+            var check3 = array_isnotempty(tipologie_utenti);
+
+            if (check1 || check2 || check3) {
+                var r = confirm("Sei proprio sicuro di volerlo inviare?");
+                if (r == true) form.submit();
+                else return false;
+            }
+            else {
+                $("#errore_inserimento").modal();
+                return false;
+            }
+            return true;
+        }
+
+        function array_isnotempty(arr) {
+            if (typeof arr != "undefined" && arr != null && arr.length != null && arr.length > 0) return true;
+            return false;
+        }
+
+    </script>
+
+</body>
+
+</html>
