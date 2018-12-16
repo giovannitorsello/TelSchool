@@ -1,4 +1,5 @@
 <html>
+
 <body>
     <div class="modal fade centered" id="anagrafiche_genitori" role="dialog">
         <script>
@@ -14,6 +15,26 @@
 
             });
 
+            $("#file_upload").change(function () {
+                console.log("File change.");
+                var fileName = $(this).val();
+                var formData = new FormData();                
+                var myFile =($("#file_upload"))[0].files[0];                                
+                formData.append('file', myFile);
+                console.log(formData);
+                jQuery.ajax({
+                    url: '/upload_file',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',                    
+                    success: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
             //Loading data from server
             $("#find").click(function () {
                 datatable_genitori.clear().draw();
@@ -24,7 +45,7 @@
                         response.forEach(element => {
                             datatable_genitori.row.add([
                                 element.id,
-                                element.cognome+" "+element.nome,
+                                element.cognome + " " + element.nome,
                                 element.cl + element.sez,
                                 element.cf_pa,
                                 element.telefono_pa,
@@ -47,6 +68,16 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Anagrafica Genitori</h5>
                     <button id="find" type="button" class="btn btn-secondary">Cerca</button>
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="file_upload_span">Importa</span>
+                        </div>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="file_upload" name="file_input" aria-describedby="inputGroupFileAddon01">
+                            <label class="custom-file-label" for="file_upload">Scegli il file</label>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Body-->
@@ -62,7 +93,7 @@
                                 <th>Email Padre</th>
                                 <th>C.F. Madre</th>
                                 <th>Telefono Madre</th>
-                                <th>Email Madre</th>                                
+                                <th>Email Madre</th>
                             </tr>
                         </thead>
                     </table>

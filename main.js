@@ -7,12 +7,20 @@ var session = require('express-session');
 var moment = require('moment');
 var path = require('path');
 var sha512 = require('js-sha512');
+var express_formidable = require('express-formidable');
+var formidable = require('formidable');
+var fs = require('fs');
+var xlsx = require('node-xlsx');
 
 //local requirements
 var config = require('./config.js');
 var global = require('./global.js');
 var db = require('./database.js');
 //var mail = require('./mail.js');
+
+//upload folder
+upload = multer({ dest: 'uploads/' });
+
 
 //Session data
 var session_data = { name: 'crmpbx', secret: 'wifinetcom2019', cookie: { maxAge: 6. / 0000 } };
@@ -30,6 +38,14 @@ app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use('/static', express.static(path_static));
 app.use("/", router);
+//For upload
+app.use(express_formidable({
+    encoding: 'utf-8',
+    uploadDir: path.join(__dirname, 'uploads'),
+    multiples: true,
+    keepExtensions: true// req.files to be arrays of files
+}));
+
 
 app.listen(8088, function () {
     console.log('Server is started.');
@@ -38,14 +54,14 @@ app.listen(8088, function () {
 });
 
 router.post('/insert/customer', function (request, response) {
-    var rb=request.body;
-    data=[rb.nome,rb.cognome,rb.dat_nas,rb.com_nas,rb.pro_nas,rb.res_com,
-         rb.res_ind,rb.res_cap,rb.res_pro,rb.cod_fisc,rb.role,rb.email,rb.phone];
+    var rb = request.body;
+    data = [rb.nome, rb.cognome, rb.dat_nas, rb.com_nas, rb.pro_nas, rb.res_com,
+    rb.res_ind, rb.res_cap, rb.res_pro, rb.cod_fisc, rb.role, rb.email, rb.phone];
     db.insert_persona(data, response.json);
 });
 
 router.post('/search/dipendenti', function (request, response) {
-    db.get_all_persone("dipendente",function (result) {response.json(result);});
+    db.get_all_persone("dipendente", function (result) { response.json(result); });
 });
 
 router.post('/anagrafiche/studenti', function (request, response) {
@@ -79,7 +95,7 @@ router.post('/login', upload.array(), function (req, res, next) {
 
     config.admin_accounts.forEach(function auth(account) {
         var password_hash_db = sha512(account.password);
-    
+
         if (username === account.username && password_hash_form === password_hash_db) {
             var timestamp = new Date().getTime();
             account.timestamp = timestamp;
@@ -106,16 +122,33 @@ router.get("/main", function (req, res) {
 router.post('/logout', upload.array(), function (req, res, next) {
     //Delete from sessions Map
     var token = req.query.token;
-    delete(sessions,token);
+    delete (sessions, token);
 
     //delete all cookies
     cookie = req.cookies;
     for (var prop in cookie) {
-        if (!cookie.hasOwnProperty(prop)) {continue;}    
-        res.cookie(prop, '', {expires: new Date(0)});
+        if (!cookie.hasOwnProperty(prop)) { continue; }
+        res.cookie(prop, '', { expires: new Date(0) });
     }
     //destroy this session
-    req.session.account=null;
+    req.session.account = null;
     req.session.destroy();
     res.redirect('/');
+});
+
+
+router.post('/upload_file', function (req, res, next) {
+    var form = new formidable.IncomingForm();
+    var file_uploaded;
+    form.parse(req);
+    form.on('fileBegin', function (name, file) {
+        file.path = __dirname + '/uploads/' + file.name;
+        file_uploaded = file.path;
+    });
+
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+        var obj = xlsx.parse(fs.readFileSync(file_uploaded));
+        console.log(obj);
+    });
 });

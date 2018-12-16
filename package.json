@@ -7,7 +7,10 @@
     "body-parser": "^1.18.3",
     "crypto": "^1.0.1",
     "express": "^4.16.4",
+    "express-formidable": "^1.2.0",
     "express-session": "^1.15.6",
+    "file": "^0.2.2",
+    "filereader": "^0.10.3",
     "fs": "0.0.1-security",
     "js-sha512": "^0.8.0",
     "moment": "^2.22.2",
@@ -17,7 +20,8 @@
     "nodemailer": "^4.6.8",
     "path": "^0.12.7",
     "socket.io-client": "^2.1.1",
-    "string_decoder": "^1.1.1"
+    "string_decoder": "^1.1.1",
+    "xls-parser": "^2.0.3"
   },
   "devDependencies": {},
   "scripts": {
