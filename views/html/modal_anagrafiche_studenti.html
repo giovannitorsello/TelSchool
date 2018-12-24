@@ -1,6 +1,7 @@
 <html>
 <body>
     <div class="modal fade" id="anagrafiche_studenti" role="dialog">
+        <div class="modal_wait_for_search" id="modal_wait_for_search"></div>            
         <script>
             var datatable_studenti;
             $(document).ready(function () {
@@ -13,14 +14,57 @@
 
             });
 
+            $("#file_upload_studenti").change(function () {
+                console.log("File student data change.");
+                var fileName = $(this).val();
+                var formData = new FormData();                
+                var myFile =($("#file_upload_studenti"))[0].files[0];   
+                console.log("File: ",myFile);                             
+                formData.append('file', myFile);
+                console.log(formData);                
+                jQuery.ajax({
+                    url: '/import/studenti',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',                    
+                    success: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
+            $("#file_upload_datiscolastici").change(function () {
+                console.log("File classroom data change.");
+                var fileName = $(this).val();
+                var formData = new FormData();                
+                var myFile =($("#file_upload_datiscolastici"))[0].files[0];   
+                console.log("File: ",myFile);                             
+                formData.append('file', myFile);
+                console.log(formData);                
+                jQuery.ajax({
+                    url: '/import/datiscolastici',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',                    
+                    success: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
             //Loading data from server
             $("#find").click(function () {
                 datatable_studenti.clear().draw();
                 console.log("Loading data from server");
                 $.ajax({
-                    url: '../../actions/database/get_studenti.php', method: 'POST',
+                    url: '/search/studenti', method: 'POST',
                     success: function (response) {
-                        response.forEach(element => {
+                        response.data.forEach(element => {
+                            element.sez=""; element.cl="";
                             datatable_studenti.row.add([
                                 element.id,
                                 element.nome,
@@ -28,8 +72,8 @@
                                 element.cod_fisc,
                                 element.sez,
                                 element.cl,
-                                element.email_gen,
-                                element.telefono_gen,
+                                element.email,
+                                element.phone,
                             ]).draw();
                         });
                     },
@@ -45,8 +89,23 @@
                 <div class="modal-header">
                     <h5 class="modal-title">Anagrafica Studenti</h5>
                     <button id="find" type="button" class="btn btn-secondary">Cerca</button>
-                </div>
-
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="file_upload_span">Importa</span>
+                        </div>
+                        <div class="custom-file">
+                            <label for="file_upload_studenti">Importa file dati anagrafici</label>
+                            <input type="file" class="custom-file-input" id="file_upload_datiscolastici" name="file_upload_datiscolastici" aria-describedby="inputGroupFileAddon01">
+                            <label class="custom-file-label" for="file_upload">Scegli il file</label>
+                        </div>
+                        <div class="custom-file">
+                                <label for="file_upload_datiscolastici">Importa file dati anagrafici</label>
+                                <input type="file" class="custom-file-input" id="file_upload_studenti" name="file_upload_studenti" aria-describedby="inputGroupFileAddon02">
+                                <label class="custom-file-label" for="file_upload">Scegli il file</label>
+                        </div>
+                    </div>
+                </div>                
+                
                 <!-- Body-->
                 <div class="modal-body">
                     <table id="table_studenti" class="display">

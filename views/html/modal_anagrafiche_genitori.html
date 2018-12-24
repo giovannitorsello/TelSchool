@@ -2,6 +2,7 @@
 
 <body>
     <div class="modal fade centered" id="anagrafiche_genitori" role="dialog">
+        <div class="modal_wait_for_search" id="modal_wait_for_search"></div>            
         <script>
             var datatable_genitori;
             $(document).ready(function () {
@@ -21,7 +22,7 @@
                 var formData = new FormData();                
                 var myFile =($("#file_upload"))[0].files[0];                                
                 formData.append('file', myFile);
-                console.log(formData);
+                console.log(formData);                
                 jQuery.ajax({
                     url: '/upload_file',
                     data: formData,
@@ -40,19 +41,17 @@
                 datatable_genitori.clear().draw();
                 console.log("Loading data from server");
                 $.ajax({
-                    url: '../../actions/database/get_genitori.php', method: 'POST',
-                    success: function (response) {
-                        response.forEach(element => {
+                    url: '/search/genitori', method: 'POST',
+                    success: function (response) {                        
+                        response.data.forEach(element => {
+                            element.cl="";element.sez="";
                             datatable_genitori.row.add([
                                 element.id,
                                 element.cognome + " " + element.nome,
                                 element.cl + element.sez,
-                                element.cf_pa,
-                                element.telefono_pa,
-                                element.email_pa,
-                                element.cf_ma,
-                                element.email_ma,
-                                element.telefono_ma,
+                                element.cod_fisc,
+                                element.phone,
+                                element.email                                
                             ]).draw();
                         });
                     },
@@ -88,12 +87,9 @@
                                 <th>Id</th>
                                 <th>Cognome e nome</th>
                                 <th>Classe e sezione</th>
-                                <th>C.F. Padre</th>
-                                <th>Telefono Padre</th>
-                                <th>Email Padre</th>
-                                <th>C.F. Madre</th>
-                                <th>Telefono Madre</th>
-                                <th>Email Madre</th>
+                                <th>C.F. Genitore</th>
+                                <th>Telefono</th>
+                                <th>Email</th>                                
                             </tr>
                         </thead>
                     </table>

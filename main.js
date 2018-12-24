@@ -10,8 +10,9 @@ var sha512 = require('js-sha512');
 var express_formidable = require('express-formidable');
 var formidable = require('formidable');
 var fs = require('fs');
-var xlsx = require('node-xlsx');
-
+var xlsx = require('xlsx');
+var xlsx_node = require('node-xlsx');
+var xlsx_json = require('xlsx-parse-json');
 //local requirements
 var config = require('./config.js');
 var global = require('./global.js');
@@ -62,6 +63,14 @@ router.post('/insert/customer', function (request, response) {
 
 router.post('/search/dipendenti', function (request, response) {
     db.get_all_persone("dipendente", function (result) { response.json(result); });
+});
+
+router.post('/search/genitori', function (request, response) {
+    db.get_all_persone("genitore", function (result) { response.json(result); });
+});
+
+router.post('/search/studenti', function (request, response) {
+    db.get_all_persone("studente", function (result) { response.json(result); });
 });
 
 router.post('/anagrafiche/studenti', function (request, response) {
@@ -148,7 +157,73 @@ router.post('/upload_file', function (req, res, next) {
 
     form.on('file', function (name, file) {
         console.log('Uploaded ' + file.name);
-        var obj = xlsx.parse(fs.readFileSync(file_uploaded));
-        console.log(obj);
+        var workbook = xlsx.readFile(file_uploaded);
+        var sheet_name_list = workbook.SheetNames;
+        var obj = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+            
+        if (obj && obj.length > 0)
+            obj.forEach(function (element, index) {
+                console.log(element);
+                //element=JSON.parse(element); //transform string in obect
+                db.insert_parents(element, function (d) { 
+                    if(index===obj.length)
+                        res.send(JSON.stringify({status: 'ok'}));
+                });
+            });
+    });
+});
+
+router.post('/import/studenti', function (req, res, next) {
+    var form = new formidable.IncomingForm();
+    var file_uploaded;
+    form.parse(req);
+    form.on('fileBegin', function (name, file) {
+        file.path = __dirname + '/uploads/' + file.name;
+        file_uploaded = file.path;
+    });
+
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+        var workbook = xlsx.readFile(file_uploaded);
+        var sheet_name_list = workbook.SheetNames;
+        var obj = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+            
+        if (obj && obj.length > 0)
+            obj.forEach(function (element, index) {
+                console.log(element);
+                //element=JSON.parse(element); //transform string in obect
+                db.insert_students(element, function (d) { 
+                    if(index===obj.length)
+                        res.send(JSON.stringify({status: 'ok'}));
+                });
+            });
+    });
+});
+
+
+router.post('/import/datiscolastici', function (req, res, next) {
+    var form = new formidable.IncomingForm();
+    var file_uploaded;
+    form.parse(req);
+    form.on('fileBegin', function (name, file) {
+        file.path = __dirname + '/uploads/' + file.name;
+        file_uploaded = file.path;
+    });
+
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file.name);
+        var workbook = xlsx.readFile(file_uploaded);
+        var sheet_name_list = workbook.SheetNames;
+        var obj = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
+            
+        if (obj && obj.length > 0)
+            obj.forEach(function (element, index) {
+                console.log(element);
+                //element=JSON.parse(element); //transform string in obect
+                db.insert_classroom_data(element, function (d) { 
+                    if(index===obj.length)
+                        res.send(JSON.stringify({status: 'ok'}));
+                });
+            });
     });
 });
