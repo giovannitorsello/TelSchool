@@ -64,14 +64,12 @@
                     url: '/search/studenti', method: 'POST',
                     success: function (response) {
                         response.data.forEach(element => {
-                            element.sez=""; element.cl="";
                             datatable_studenti.row.add([
                                 element.id,
                                 element.nome,
                                 element.cognome,
                                 element.cod_fisc,
-                                element.sez,
-                                element.cl,
+                                element.classe+element.sezione,                                
                                 element.email,
                                 element.phone,
                             ]).draw();
@@ -88,22 +86,7 @@
                 <!-- Header-->
                 <div class="modal-header">
                     <h5 class="modal-title">Anagrafica Studenti</h5>
-                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="file_upload_span">Importa</span>
-                        </div>
-                        <div class="custom-file">
-                            <label for="file_upload_studenti">Importa file dati anagrafici</label>
-                            <input type="file" class="custom-file-input" id="file_upload_datiscolastici" name="file_upload_datiscolastici" aria-describedby="inputGroupFileAddon01">
-                            <label class="custom-file-label" for="file_upload">Scegli il file</label>
-                        </div>
-                        <div class="custom-file">
-                                <label for="file_upload_datiscolastici">Importa file dati anagrafici</label>
-                                <input type="file" class="custom-file-input" id="file_upload_studenti" name="file_upload_studenti" aria-describedby="inputGroupFileAddon02">
-                                <label class="custom-file-label" for="file_upload">Scegli il file</label>
-                        </div>
-                    </div>
+                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>                    
                 </div>                
                 
                 <!-- Body-->
@@ -115,8 +98,7 @@
                                 <th>Nome</th>
                                 <th>Cognome</th>
                                 <th>Cod. Fiscale</th>
-                                <th>Sezione</th>
-                                <th>Classe</th>
+                                <th>Classe e Sezione</th>                                
                                 <th>Email</th>
                                 <th>Telefono</th>
                             </tr>

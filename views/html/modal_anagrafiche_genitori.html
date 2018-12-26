@@ -16,26 +16,6 @@
 
             });
 
-            $("#file_upload").change(function () {
-                console.log("File change.");
-                var fileName = $(this).val();
-                var formData = new FormData();                
-                var myFile =($("#file_upload"))[0].files[0];                                
-                formData.append('file', myFile);
-                console.log(formData);                
-                jQuery.ajax({
-                    url: '/upload_file',
-                    data: formData,
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                    method: 'POST',                    
-                    success: function (data) {
-                        alert(data);
-                    }
-                });
-            });
-
             //Loading data from server
             $("#find").click(function () {
                 datatable_genitori.clear().draw();
@@ -44,12 +24,11 @@
                     url: '/search/genitori', method: 'POST',
                     success: function (response) {                        
                         response.data.forEach(element => {
-                            element.cl="";element.sez="";
                             datatable_genitori.row.add([
                                 element.id,
                                 element.cognome + " " + element.nome,
-                                element.cl + element.sez,
-                                element.cod_fisc,
+                                element.classe + element.sezione,
+                                element.cod_fisc,                                
                                 element.phone,
                                 element.email                                
                             ]).draw();
@@ -66,17 +45,7 @@
                 <!-- Header-->
                 <div class="modal-header">
                     <h5 class="modal-title">Anagrafica Genitori</h5>
-                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>
-
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="file_upload_span">Importa</span>
-                        </div>
-                        <div class="custom-file">
-                            <input type="file" class="custom-file-input" id="file_upload" name="file_input" aria-describedby="inputGroupFileAddon01">
-                            <label class="custom-file-label" for="file_upload">Scegli il file</label>
-                        </div>
-                    </div>
+                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>                    
                 </div>
 
                 <!-- Body-->

@@ -25,19 +25,20 @@ CREATE TABLE IF NOT EXISTS persone(
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS famiglia(
-    id                INT AUTO_INCREMENT,
-    id_persona_A      INT NOT NULL,
-    id_persona_B      INT NOT NULL,
-    codfis_persona_A  VARCHAR(20) NOT NULL,
-    codfis_persona_B  VARCHAR(20) NOT NULL,
-    ruolo_A           VARCHAR(100) NOT NULL,
-    ruolo_B           VARCHAR(100) NOT NULL,
-    PRIMARY           KEY (id)
+    id             INT AUTO_INCREMENT,
+    id_persona     INT          NOT NULL,
+    cod_fisc_A     VARCHAR(100) NULL,
+    cod_fisc_B     VARCHAR(100) NULL,
+    cod_fisc_C     VARCHAR(100) NULL,
+    ruolo_A        VARCHAR(100) NULL,
+    ruolo_B        VARCHAR(100) NULL,
+    ruolo_C        VARCHAR(100) NULL,
+    PRIMARY        KEY (id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS organizzazione(
     id          INT AUTO_INCREMENT,
-    id_persona  INT NOT NULL,
+    id_persona  INT           NOT NULL,
     cod_fisc    VARCHAR(20)   NOT NULL,
     classe      VARCHAR(20)   NOT NULL,
     sezione     VARCHAR(20)   NOT NULL,

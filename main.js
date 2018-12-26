@@ -66,11 +66,11 @@ router.post('/search/dipendenti', function (request, response) {
 });
 
 router.post('/search/genitori', function (request, response) {
-    db.get_all_persone("genitore", function (result) { response.json(result); });
+    db.get_parents(function (result) { response.json(result); });
 });
 
 router.post('/search/studenti', function (request, response) {
-    db.get_all_persone("studente", function (result) { response.json(result); });
+    db.get_students(function (result) { response.json(result); });
 });
 
 router.post('/anagrafiche/studenti', function (request, response) {
@@ -146,7 +146,7 @@ router.post('/logout', upload.array(), function (req, res, next) {
 });
 
 
-router.post('/upload_file', function (req, res, next) {
+router.post('/import/parents', function (req, res, next) {
     var form = new formidable.IncomingForm();
     var file_uploaded;
     form.parse(req);
@@ -173,7 +173,7 @@ router.post('/upload_file', function (req, res, next) {
     });
 });
 
-router.post('/import/studenti', function (req, res, next) {
+router.post('/import/school_data', function (req, res, next) {
     var form = new formidable.IncomingForm();
     var file_uploaded;
     form.parse(req);

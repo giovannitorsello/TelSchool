@@ -14,6 +14,9 @@ function load_components() {
     insert_component('#link_modal_registrazioni_pendenti', '#registrazioni_pendenti', '#main_container');
     insert_component('#link_modal_registrazioni_manuali', '#registrazioni_manuali', '#main_container');
 
+    //Importazione dati
+    insert_component('#link_modal_importazione_studenti', '#importazione_dati_studenti', '#main_container');
+    
     //Gestione anagrafiche
     insert_component('#link_modal_anagrafiche_studenti', '#anagrafiche_studenti', '#main_container');
     insert_component('#link_modal_anagrafiche_genitori', '#anagrafiche_genitori', '#main_container');

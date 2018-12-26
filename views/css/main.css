@@ -1,3 +1,4 @@
+body{ background-image:url("/static/images/background.jpg"); background-repeat: repeat; background-position: left; background-size:cover; padding:10px;}
 
 /* correction black background on modal dialog */
 .modal-backdrop {
@@ -16,4 +17,8 @@
 
 .modal-content {
     width: 80em;
+}
+
+.app-title {
+    color: blue;
 }

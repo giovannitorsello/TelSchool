@@ -1,0 +1,143 @@
+<html>
+
+<body>
+    <div class="modal fade" id="importazione_dati_studenti" role="dialog">
+        <div class="modal_wait_for_search" id="modal_wait_for_search"></div>
+        <script>
+            var datatable_students_data;
+            $(document).ready(function () {
+                datatable_students_data = $('#table_dati_scolastici_utenti').DataTable(); //End datatable
+                //Table events binding
+                $('#table_dati_scolastici_utenti tbody').on('click', 'tr', function () {
+                    var data = datatable_students_data.row(this).data();
+                    //Open form variing data
+                });
+
+            });
+
+            $("#datiscolastici_studenti_upload").change(function () {
+                console.log("File school data change.");
+                var fileName = $(this).val();
+                var formData = new FormData();
+                var myFile = $(this)[0].files[0];
+                console.log("File: ", myFile);
+                formData.append('file', myFile);
+                console.log(formData);
+                jQuery.ajax({
+                    url: '/import/school_data',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',
+                    success: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
+            $("#dati_genitori_upload").change(function () {
+                console.log("File parents change.");
+                var fileName = $(this).val();
+                var formData = new FormData();
+                var myFile = $(this)[0].files[0];
+                formData.append('file', myFile);
+                console.log(formData);
+                jQuery.ajax({
+                    url: '/import/parents',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',
+                    success: function (data) {
+                        alert(data);
+                    }
+                });
+            });
+
+            //Loading data from server
+            $("#find").click(function () {
+                datatable_students_data.clear().draw();
+                console.log("Loading data from server");
+                $.ajax({
+                    url: '/search/studenti', method: 'POST',
+                    success: function (response) {
+                        response.data.forEach(element => {
+                            datatable_students_data.row.add([
+                                element.id,
+                                element.nome,
+                                element.cognome,
+                                element.classe + element.sezione,
+                                element.cod_fisc,
+                                element.cod_fisc_A + " (" + element.ruolo_A + ") <br>" +
+                                element.cod_fisc_B + " (" + element.ruolo_B + ") <br>" +
+                                element.cod_fisc_C + " (" + element.ruolo_C + ")",
+                                element.email,
+                                element.phone,
+                            ]).draw();
+                        });
+                    },
+                    error: function (response) { console.log("Search students fail."); }
+                });
+            });
+
+        </script>
+
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <!-- Header-->
+                <div class="modal-header">
+                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>
+                    
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="file_upload_span">Importa dati alunni</span>
+                        </div>
+                        <div class="custom-file">                            
+                            <input type="file" class="custom-file-input" id="datiscolastici_studenti_upload" name="datiscolastici_studenti_upload"
+                                aria-describedby="inputGroupFileAddon01">
+                            <label class="custom-file-label" for="datiscolastici_studenti_upload">Scegli il file</label>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="file_upload_span">Importa dati genitori</span>
+                        </div>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="dati_genitori_upload" name="dati_genitori_upload"
+                                aria-describedby="inputGroupFileAddon01">
+                            <label class="custom-file-label" for="file_upload">Scegli il file</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Body-->
+                <div class="modal-body">
+                    <table id="table_dati_scolastici_utenti" class="display">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Nome</th>
+                                <th>Cognome</th>
+                                <th>Classe e Sezione</th>
+                                <th>CF Studente</th>
+                                <th>CF Genitori</th>
+                                <th>Email</th>
+                                <th>Telefono</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+
+                <!-- Footer-->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
