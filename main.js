@@ -292,6 +292,9 @@ router.post('/message/send', function (req, res, next) {
                                     console.log(" Inviato a " + JSON.stringify(to));
                                     res.send({status: "ok", msg:"Messaggio inviato"});
                                 }
+                                else {
+                                    res.send({status: "error", msg:"Messaggio non inviato"});
+                                }
                             });                            
                             
                         }
