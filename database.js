@@ -38,27 +38,35 @@ module.exports = {
     var sezioni = message.dst_sezioni;
     var ruoli = message.dst_ruoli;
     var sql = "SELECT DISTINCT nome,cognome,classe,sezione,email,phone,chat_id FROM persone, organizzazione WHERE ( persone.id=organizzazione.id_persona AND ";
+    
+    if (ruoli) {
+      sql += "(";
+      ruoli.forEach(function (ruolo, i_ruolo) {
+        sql += "persone.role='" + ruolo + "'"
+        if (i_ruolo < ruoli.length - 1) sql += " OR ";
+      });
+      sql += ")";
+    }
 
-    sql += "(";
-    ruoli.forEach(function (ruolo, i_ruolo) {
-      sql += "persone.role='" + ruolo + "'"
-      if (i_ruolo < ruoli.length - 1) sql += " OR ";
-    });
-    sql += ") AND (";
+    if (sezioni) {
+      sql += " AND (";
+      sezioni.forEach(function (sezione, i_sezione) {
+        sql += "organizzazione.sezione='" + sezione + "'"
+        if (i_sezione < sezioni.length - 1) sql += " OR ";
+      });
+      sql += ")";
+    }
 
+    if (classi) {
+      sql += " AND (";
+      classi.forEach(function (classe, i_classe) {
+        sql += "organizzazione.classe='" + classe + "'"
+        if (i_classe < classi.length - 1) sql += " OR ";
+      });
+      sql += ")";
+    }
 
-    sezioni.forEach(function (sezione, i_sezione) {
-      sql += "organizzazione.sezione='" + sezione + "'"
-      if (i_sezione < sezioni.length - 1) sql += " OR ";
-    });
-    sql += ") AND (";
-
-    classi.forEach(function (classe, i_classe) {
-      sql += "organizzazione.classe='" + classe + "'"
-      if (i_classe < classi.length - 1) sql += " OR ";
-    });
-    sql += "));";
-
+    sql += ");";
     global.connection_mysql.query(sql, function (err, result) {
       if (err) {
         console.log("Ricerca fallita " + JSON.stringify(err));
@@ -99,7 +107,7 @@ module.exports = {
       }
       else {
         console.log("Inserimento effettuato " + result.insertId);
-        callback({ status: "ok", lastid: result.insertId });
+        callback({ status: "ok", lastid: result.insertId, msg: "Inserito con successo." });
       }
     });
   },
@@ -127,7 +135,7 @@ module.exports = {
     global.connection_mysql.query(sql, function (err, result) {
       if (err) {
         console.log("Inserimento fallito " + JSON.stringify(err));
-        callback({ status: "error", msg: JSON.stringify(err) });
+        callback({ status: "error", msg: "Errore inserimento.  " + JSON.stringify(err) });
       }
       else {
         console.log("Inserimento effettuato " + result.insertId);
@@ -313,20 +321,20 @@ module.exports = {
     s.res_ind = data_import.IND_RES;
     s.barcode = data_import.BARCODE;
 
-    if (data_import.TELEFONO_GEN && data_import.TELEFONO_GEN !== "") 
+    if (data_import.TELEFONO_GEN && data_import.TELEFONO_GEN !== "")
       s.phone = data_import.TELEFONO_GEN;
-    else if (data_import.CELL && data_import.CELL !== "") 
+    else if (data_import.CELL && data_import.CELL !== "")
       s.phone = data_import.CELL;
-    else if (data_import.TEL2 && data_import.TEL2 !== "") 
+    else if (data_import.TEL2 && data_import.TEL2 !== "")
       s.phone = data_import.TEL2;
-    else if (!s.phone || s.phone === "") 
+    else if (!s.phone || s.phone === "")
       s.phone = "0833566833";
 
-    if (data_import.E_MAIL) 
-      s.email = data_import.E_MAIL; 
-    else 
+    if (data_import.E_MAIL)
+      s.email = data_import.E_MAIL;
+    else
       s.email = "";
-    if (!s.email || s.email === "") 
+    if (!s.email || s.email === "")
       s.email = s.cod_fisc + "@liceovallone.org";
 
     s.tit_stu = "Licenza Scuola Secondaria di Primo Grado";
@@ -364,5 +372,48 @@ module.exports = {
       }
 
     });
+  },
+
+  register_email: function (message, callback) {
+    var text = message.text;
+    var email = text.split("(");
+    var cmd = email[0];
+    email = email[1].split(")")[0];
+    var chat_id = message.chat.id;
+    //verify email format
+    if (cmd === "EMAIL" && validateEmail(email)) {
+      sql = "UPDATE persone SET email='" + email + "' WHERE chat_id='" + chat_id + "'";
+      global.connection_mysql.query(sql, function (err, result) {
+        if (err) {
+          console.log("Registrazione fallita " + JSON.stringify(err));
+          callback({ status: "error", msg: JSON.stringify(err) });
+        }
+        else {
+          console.log("Registrazione avvenuta con successo.");
+          callback({ status: "ok", data: message });
+        }
+      });
+    }
+  },
+
+  register_telegram_chat_id: function (message, callback) {
+    var codfis = message.text;
+    var chat_id = message.chat.id;
+    sql = "UPDATE persone SET chat_id='" + chat_id + "' WHERE cod_fisc='" + codfis + "'";
+    global.connection_mysql.query(sql, function (err, result) {
+      if (err) {
+        console.log("Registrazione fallita " + JSON.stringify(err));
+        callback({ status: "error", msg: JSON.stringify(err) });
+      }
+      else {
+        console.log("Registrazione avvenuta con successo.");
+        callback({ status: "ok", data: message });
+      }
+    });
   }
+}
+
+function validateEmail(email) {
+  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
 }

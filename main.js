@@ -12,8 +12,6 @@ var http = require('http');
 var url = require('url');
 var moment = require('moment');
 const { StringDecoder } = require('string_decoder');
-const Telegram = require('telegram-send-message');
-
 
 // Needed fo xls import
 var express_formidable = require('express-formidable');
@@ -22,10 +20,12 @@ var fs = require('fs');
 var xlsx = require('xlsx');
 var xlsx_node = require('node-xlsx');
 var xlsx_json = require('xlsx-parse-json');
+
 //local requirements
 var config = require('./config.js');
 var global = require('./global.js');
 var db = require('./database.js');
+var telegram=require("./telegram.js");
 //var mail = require('./mail.js');
 
 //upload folder
@@ -34,6 +34,7 @@ upload = multer({ dest: 'uploads/' });
 
 //Session data
 var session_data = { name: 'crmpbx', secret: 'wifinetcom2019', cookie: { maxAge: 6. / 0000 } };
+
 
 var app = express();
 var router = express.Router();
@@ -63,13 +64,21 @@ app.listen(8088, function () {
     console.log('Server is started.');
     //Start db connection
     db.start_connection();
+    //Telegram
+    telegram.getMe();
+    
 });
 
 router.post('/insert/customer', function (request, response) {
     var rb = request.body;
     data = [rb.nome, rb.cognome, rb.dat_nas, rb.com_nas, rb.pro_nas, rb.res_com,
-    rb.res_ind, rb.res_cap, rb.res_pro, rb.cod_fisc, rb.role, rb.email, rb.phone];
-    db.insert_persona(data, response.json);
+    rb.res_ind, rb.res_cap, rb.res_pro, rb.cod_fisc, rb.role, rb.email, rb.phone, "", "", ""];
+    db.insert_persona(data, function(result){
+        if(result.status==="ok"){
+            var org=[result.lastid, rb.cod_fisc, "gen", "gen", rb.role];
+            db.insert_classroom(org, function(result){response.send(result);});        
+        }
+    });
 });
 
 router.post('/search/dipendenti', function (request, response) {
@@ -266,11 +275,11 @@ router.post('/message/send', function (req, res, next) {
     if (msgdt) {
         msgdt.account = req.session.account;
         db.insert_message(msgdt, function (result) {
-            var str_message = "OGGETTO: " + msgdt.subject + "\r\n";
-            str_message += msgdt.text + "\r\n";
-            if (msgdt.files) {
-                msgdt.files.forEach(function (file, i_file) {
-                    str_message += file.url + "\r\n";
+            var str_message = "OGGETTO: " + msgdt.subject+"|" ;
+            str_message += msgdt.text+"|";
+            if (msgdt.attached_files) {
+                msgdt.attached_files.forEach(function (file, i_file) {
+                    str_message += "<a href=\""+file.url+"\">"+file.url+ "</a>";
                 });
             }
             db.select_persons_by_messages(msgdt, function (result) {
@@ -278,17 +287,18 @@ router.post('/message/send', function (req, res, next) {
                     var tos = result.data;
                     tos.forEach(function (to, i_to) {
                         if (to.chat_id) {
-                            Telegram.setToken(config.telegram_token);
-                            Telegram.setRecipient(to.chat_id);
-                            Telegram.setMessage(msgdt);
-                            Telegram.send();
-                            console.log(" Inviato a " + JSON.stringify(to));
+                            telegram.send_message(to.chat_id, str_message, function (res_tel){
+                                if(res_tel.status==="ok") {
+                                    console.log(" Inviato a " + JSON.stringify(to));
+                                    res.send({status: "ok", msg:"Messaggio inviato"});
+                                }
+                            });                            
+                            
                         }
                         
                     });
                 }
-            });
-            res.send(result);
+            });            
         });
     }
     else
@@ -304,7 +314,7 @@ router.post('/search/sezioni', function (request, response) {
 });
 
 router.post('/search/ruoli', function (request, response) {
-    db.get_distinct_list("organizzazione", "ruolo", function (result) { response.json(result); });
+    db.get_distinct_list("persone", "role", function (result) { response.json(result); });
 });
 
 router.post('/search/messaggi', function (request, response) {
@@ -336,19 +346,26 @@ router.post('/search/messaggi', function (request, response) {
 
 function format_destinations(msg) {
     var str_to = "";
+    
+    if(msg.dst_ruoli)
     msg.dst_ruoli.forEach(function (ruolo, i_ruolo) {
         str_to += ruolo;
         if (i_ruolo < msg.dst_ruoli.length - 1) str_to += ",";
     });
     str_to += "|sezioni: ";
+
+    if(msg.dst_sezioni)
     msg.dst_sezioni.forEach(function (sezione, i_sezione) {
         str_to += sezione;
         if (i_sezione < msg.dst_sezioni.length - 1) str_to += ",";
     });
     str_to += "|classi: ";
+
+    if(msg.dst_classi)
     msg.dst_classi.forEach(function (classe, i_classe) {
         str_to += classe;
         if (i_classe < msg.dst_classi.length - 1) str_to += ",";
     });
     return str_to;
 }
+

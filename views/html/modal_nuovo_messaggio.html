@@ -147,8 +147,8 @@
                 url: '/search/ruoli', method: 'POST',
                 success: function (response) {
                     response.data.forEach(element => {
-                        console.log(element.ruolo);
-                        var str_html = '<input onchange="dest_select(event,this)" type="checkbox" name="ruolo" value="' + element.ruolo + '"/> ' + element.ruolo + '<br />'
+                        console.log(element.role);
+                        var str_html = '<input onchange="dest_select(event,this)" type="checkbox" name="ruolo" value="' + element.role + '"/> ' + element.role + '<br />'
                         $('#ruoli_dest').append(str_html);
                     });
                 },
