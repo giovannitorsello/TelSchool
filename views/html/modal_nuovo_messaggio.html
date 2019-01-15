@@ -1,60 +1,63 @@
 <html>
 
 <body>
-    <div class="modal fade" id="anagrafiche_dipendenti" role="dialog">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal fade" id="nuovo_messaggio" role="dialog">
+        <div class="modal_wait_for_search" id="modal_wait_for_search"></div>
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <!-- Header-->
+
                 <div class="modal-header">
                     <h5 class="modal-title">Invio messaggio</h5>
                 </div>
 
-                <!-- Body-->
                 <div class="modal-body">
-                    <!-- FORM DI INVIO MESSAGGIO-->
-                    <form action="./destinatari.php" method="post" enctype="multipart/form-data" name="send">
-                        <!-- zona file invio e browse -->
-                        <div class="row">
-                            <div class="col-sm">
-                                <input type="file" name="file" id="file" required />
-                            </div>
 
-                            <div class="col-md-13">
-                                <div class="form-group label-floating">
-                                    <input type="text" class="form-control" name="filepdf" id="namefile" placeholder="Inserisci il nome della circolare..."
-                                        required>
-                                </div>
+                    <ul class="nav nav-tabs" id="tab_invio" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="destinatari-tab" data-toggle="tab" href="#tab_destinatari"
+                                role="tab" aria-controls="tab_destinatari" aria-selected="true">Destinatari</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="attachments-tab" data-toggle="tab" href="#tab_attachments" role="tab"
+                                aria-controls="tab_attachments" aria-selected="false">Allegati</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="messages-tab" data-toggle="tab" href="#tab_messaggio" role="tab"
+                                aria-controls="tab_message" aria-selected="false">Messaggio</a>
+                        </li>
+                    </ul>
+
+
+                    <div class="tab-content">
+                        <div class="tab-pane fade show active" id="tab_destinatari" role="tabpanel" aria-labelledby="home-tab">
+                            <div class="row">
+                                <div id="ruoli_dest" class="col-md-3"></div>
+                                <div id="classi_dest" class="col-md-3"></div>
+                                <div id="sezioni_dest" class="col-md-3"></div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="tab_attachments" role="tabpanel" aria-labelledby="profile-tab">
+                            <div class="row">
+                                <input type="file" class="form-control" name="attached_file" id="file_attach" name="file_attach" />
                             </div>
                         </div>
 
-                        <!-- scrittura messaggio -->
-                        <div class="row">
-                            <div class="col-md-13">
-                                <div class="form-group">
-                                    <label for="Messaggio">Messaggio:</label>
-                                    <textarea class="form-control" rows="5" id="messaggio" name="messaggio" placeholder="Inserisci il messaggio da inviare ... "
-                                        required></textarea>
-                                </div>
+                        <div class="tab-pane fade" id="tab_messaggio" role="tabpanel" aria-labelledby="settings-tab">
+                            <div class="row">
+                                <label for="object">Oggetto</label>
+                                <input type="text" class="form-control" name="subject" id="subject" placeholder="Oggetto comunicazione"
+                                    required>
                             </div>
-                        </div>
 
-                        <!-- filtri per i destinatari -->
-                        <div class="row">
-                            <div class="col-md-3">
-                                <!--?php include_once './snipsets/categorie_utenti.php' ?-->
+                            <div class="row">
+                                <label for="messaggio">Testo del messaggio</label>
+                                <textarea class="form-control" rows="5" id="message" name="message" placeholder="Inserisci il messaggio da inviare ... "
+                                    required></textarea>
                             </div>
-                            <!-- Colonna sezioni -->
-                            <div class="col-md-3">
-                                <!--?php include_once './snipsets/sezioni_scuola.php' ?-->
-                            </div>
-                            <div class="col-md-3">
-                                <!--?php include_once './snipsets/classi_scuola.php' ?-->
-                            </div>
+                            <button id="button_send" class="btn btn-primary pull-right">Invia</button>
                         </div>
+                    </div>
 
-                        <button class="btn btn-primary pull-right" onclick="return validateForm(this.form)">Invia
-                            Messaggio</button>
-                    </form>
                 </div>
 
                 <!-- Footer-->
@@ -67,6 +70,118 @@
 
     <!----- Gestione Eventi pagina ---->
     <script type="text/javascript">
+
+        var ruoli = [], sezioni = [], classi = [], files = [];
+
+        $(document).ready(function () {
+            setTimeout(setup, 1000);
+        });
+
+
+        function setup() {
+
+            $('#tab_invio').tab('show');
+            get_ruoli();
+            get_classi();
+            get_sezioni();
+
+            //EVENTS SECTIONS
+            $("#button_send").click(function () {
+                var message_subject=$("#subject").val();
+                var message_text=$("#message").val();
+                
+                var messages_data={"subject": message_subject, "text": message_text, "dst_ruoli": ruoli, "dst_classi": classi, "dst_sezioni": sezioni, "attached_files": files};
+                console.log(messages_data);
+
+                jQuery.ajax({
+                    url: '/message/send',
+                    data: messages_data,
+                    crossDomain:true, 
+                    dataType: "json",
+                    method: 'POST',
+                    success: function (data) {
+                        console.log(data);
+                        if (data.status === "ok") { 
+                            //$("#table_message_sent").ajax.reload();
+                            $("#nuovo_messaggio").modal('hide');
+                        }
+                        else alert("Errore nell'invio. Riavviare l'applicazione eseguendo il logout.");
+                    }
+                });
+            });
+
+            $("#file_attach").change(function () {
+                console.log("File attachment change.");
+                var fileName = $(this).val();
+                var formData = new FormData();
+                var myFile = $(this)[0].files[0];
+                formData.append('file', myFile);
+                console.log(formData);
+                jQuery.ajax({
+                    url: '/upload/get_attached_link',
+                    data: formData,
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    method: 'POST',
+                    success: function (data) {
+                        console.log(data);
+                        if (data.status === "ok") { files.push(data.file); alert("File caricato url: " + data.file.original_name); }
+                        else alert("Errore nel caricamento. Riavviare l'applicazione eseguendo il logout.");
+                    }
+                });
+            });
+
+        }
+
+        function dest_select(event) {
+            var field = event.target.name;
+            var value = event.target.value;
+            if (field === "ruolo") ruoli.push(value);
+            if (field === "classe") classi.push(value);
+            if (field === "sezione") sezioni.push(value);
+        }
+
+        function get_ruoli() {
+            $.ajax({
+                url: '/search/ruoli', method: 'POST',
+                success: function (response) {
+                    response.data.forEach(element => {
+                        console.log(element.ruolo);
+                        var str_html = '<input onchange="dest_select(event,this)" type="checkbox" name="ruolo" value="' + element.ruolo + '"/> ' + element.ruolo + '<br />'
+                        $('#ruoli_dest').append(str_html);
+                    });
+                },
+                error: function (response) { console.log("Search ruoli fail."); }
+            });
+        }
+
+        function get_classi() {
+            $.ajax({
+                url: '/search/classi', method: 'POST',
+                success: function (response) {
+                    response.data.forEach(element => {
+                        var str_html = '<input onchange="dest_select(event,this)" type="checkbox" name="classe" value="' + element.classe + '"/> ' + element.classe + '<br />'
+                        $('#classi_dest').append(str_html);
+                    });
+                },
+                error: function (response) { console.log("Search classes fail."); }
+            });
+        }
+
+        function get_sezioni() {
+            $.ajax({
+                url: '/search/sezioni', method: 'POST',
+                success: function (response) {
+                    response.data.forEach(element => {
+                        var str_html = '<input onchange="dest_select(event,this)" type="checkbox" name="sezione" value="' + element.sezione + '"/> ' + element.sezione + '<br />'
+                        $('#sezioni_dest').append(str_html);
+                    });
+                },
+                error: function (response) { console.log("Search sections fail."); }
+            });
+        }
+
 
         //validazione dati per l'invio
         function validateForm(form) {

@@ -2,7 +2,7 @@
 
 <body>
     <div class="modal fade centered" id="anagrafiche_genitori" role="dialog">
-        <div class="modal_wait_for_search" id="modal_wait_for_search"></div>            
+        <div class="modal_wait_for_search" id="modal_wait_for_search"></div>
         <script>
             var datatable_genitori;
             $(document).ready(function () {
@@ -22,15 +22,15 @@
                 console.log("Loading data from server");
                 $.ajax({
                     url: '/search/genitori', method: 'POST',
-                    success: function (response) {                        
+                    success: function (response) {
                         response.data.forEach(element => {
                             datatable_genitori.row.add([
                                 element.id,
                                 element.cognome + " " + element.nome,
                                 element.classe + element.sezione,
-                                element.cod_fisc,                                
+                                element.cod_fisc,
                                 element.phone,
-                                element.email                                
+                                element.email
                             ]).draw();
                         });
                     },
@@ -45,7 +45,7 @@
                 <!-- Header-->
                 <div class="modal-header">
                     <h5 class="modal-title">Anagrafica Genitori</h5>
-                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>                    
+                    <button id="find" type="button" class="btn btn-secondary">Cerca</button>
                 </div>
 
                 <!-- Body-->
@@ -58,7 +58,7 @@
                                 <th>Classe e sezione</th>
                                 <th>C.F. Genitore</th>
                                 <th>Telefono</th>
-                                <th>Email</th>                                
+                                <th>Email</th>
                             </tr>
                         </thead>
                     </table>

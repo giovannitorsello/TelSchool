@@ -32,7 +32,62 @@ module.exports = {
       }
     });
   },
+  //Select destinations from messages
+  select_persons_by_messages: function (message, callback) {
+    var classi = message.dst_classi;
+    var sezioni = message.dst_sezioni;
+    var ruoli = message.dst_ruoli;
+    var sql = "SELECT DISTINCT nome,cognome,classe,sezione,email,phone,chat_id FROM persone, organizzazione WHERE ( persone.id=organizzazione.id_persona AND ";
 
+    sql += "(";
+    ruoli.forEach(function (ruolo, i_ruolo) {
+      sql += "persone.role='" + ruolo + "'"
+      if (i_ruolo < ruoli.length - 1) sql += " OR ";
+    });
+    sql += ") AND (";
+
+
+    sezioni.forEach(function (sezione, i_sezione) {
+      sql += "organizzazione.sezione='" + sezione + "'"
+      if (i_sezione < sezioni.length - 1) sql += " OR ";
+    });
+    sql += ") AND (";
+
+    classi.forEach(function (classe, i_classe) {
+      sql += "organizzazione.classe='" + classe + "'"
+      if (i_classe < classi.length - 1) sql += " OR ";
+    });
+    sql += "));";
+
+    global.connection_mysql.query(sql, function (err, result) {
+      if (err) {
+        console.log("Ricerca fallita " + JSON.stringify(err));
+        callback({ status: "error", msg: JSON.stringify(err) });
+      }
+      else {
+        console.log("Ricerca effettuata " + result.length);
+        callback({ data: result, status: "ok", msg: "Ricerca effettuata " + result.length });
+      }
+    });
+
+  },
+  //Insert message
+  insert_message: function (message, callback) {
+    var sql = "INSERT INTO message (subject,text,user,date,messagedata) VALUES (?,?,?,?,?)";
+    var str_date = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
+    var sql_data = [message.subject, message.text, message.account.real_name, str_date, JSON.stringify(message)];
+    sql = global.connection_mysql.format(sql, sql_data);
+    global.connection_mysql.query(sql, function (err, result) {
+      if (err) {
+        console.log("Inserimento fallito " + JSON.stringify(err));
+        callback({ status: "error", msg: JSON.stringify(err) });
+      }
+      else {
+        console.log("Inserimento effettuato " + result.insertId);
+        callback({ status: "ok", lastid: result.insertId });
+      }
+    });
+  },
   //Insert classroom data for students and parents
   insert_classroom: function (data, callback) {
     var sql = "INSERT INTO organizzazione (id_persona,cod_fisc,classe,sezione,ruolo) VALUES (?,?,?,?,?)";
@@ -106,6 +161,19 @@ module.exports = {
       }
     });
   },
+  get_all_messaggi: function (offset, limit, callback) {
+    var sql = "SELECT * FROM message ORDER BY date DESC LIMIT " + limit + " OFFSET " + offset + ";";
+    global.connection_mysql.query(sql, function (err, result) {
+      if (err) {
+        console.log("Ricerca fallita " + JSON.stringify(err));
+        callback({ status: "error", msg: JSON.stringify(err) });
+      }
+      else {
+        console.log("Ricerca effettuata " + result.length);
+        callback({ data: result, status: "ok", msg: "Ricerca effettuata " + result.length });
+      }
+    });
+  },
   get_students: function (callback) {
     var sql = "SELECT * FROM persone,organizzazione,famiglia WHERE( \
               organizzazione.id_persona=persone.id AND famiglia.id_persona=persone.id \
@@ -128,6 +196,19 @@ module.exports = {
                famiglia.cod_fisc_C=persone.cod_fisc) AND \
                famiglia.id_persona=organizzazione.id_persona \
               AND persone.role='genitore');";
+    global.connection_mysql.query(sql, function (err, result) {
+      if (err) {
+        console.log("Ricerca fallita " + JSON.stringify(err));
+        callback({ status: "error", msg: JSON.stringify(err) });
+      }
+      else {
+        console.log("Ricerca effettuata " + result.length);
+        callback({ data: result, status: "ok", msg: "Ricerca effettuata " + result.length });
+      }
+    });
+  },
+  get_distinct_list(table, field, callback) {
+    var sql = "SELECT DISTINCT " + field + " FROM " + table + " ORDER BY " + field + " ASC";
     global.connection_mysql.query(sql, function (err, result) {
       if (err) {
         console.log("Ricerca fallita " + JSON.stringify(err));
@@ -232,13 +313,21 @@ module.exports = {
     s.res_ind = data_import.IND_RES;
     s.barcode = data_import.BARCODE;
 
-    if (data_import.TEL && data_import.TEL !== "") s.phone = data_import.TEL;
-    else if (data_import.CELL && data_import.CELL !== "") s.phone = data_import.CELL;
-    else if (data_import.TEL2 && data_import.TEL2 !== "") s.phone = data_import.TEL2;
-    else if (!s.phone || s.phone === "") s.phone = "0833566833";
+    if (data_import.TELEFONO_GEN && data_import.TELEFONO_GEN !== "") 
+      s.phone = data_import.TELEFONO_GEN;
+    else if (data_import.CELL && data_import.CELL !== "") 
+      s.phone = data_import.CELL;
+    else if (data_import.TEL2 && data_import.TEL2 !== "") 
+      s.phone = data_import.TEL2;
+    else if (!s.phone || s.phone === "") 
+      s.phone = "0833566833";
 
-    if (data_import.E_MAIL) s.email = data_import.E_MAIL; else s.email = "";
-    if (!s.email || s.email === "") s.email = s.cod_fisc + "@liceovallone.org";
+    if (data_import.E_MAIL) 
+      s.email = data_import.E_MAIL; 
+    else 
+      s.email = "";
+    if (!s.email || s.email === "") 
+      s.email = s.cod_fisc + "@liceovallone.org";
 
     s.tit_stu = "Licenza Scuola Secondaria di Primo Grado";
     s.att_lav = "studente";

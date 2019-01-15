@@ -46,6 +46,17 @@ CREATE TABLE IF NOT EXISTS organizzazione(
     PRIMARY     KEY (id)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS message(
+    id            INT AUTO_INCREMENT,    
+    subject       VARCHAR(200)  NOT NULL,
+    text          VARCHAR(1000) NOT NULL,    
+    user          VARCHAR(20)   NOT NULL,
+    date          DATE          NOT NULL,
+    messagedata blob, 
+    CHECK (JSON_VALID(messagedata)), 
+    PRIMARY KEY (id)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
 CREATE TABLE login_attempts (
   user_id   INT NOT NULL,
   time      INT NOT NULL

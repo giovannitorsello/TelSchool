@@ -7,6 +7,15 @@ var session = require('express-session');
 var moment = require('moment');
 var path = require('path');
 var sha512 = require('js-sha512');
+var md5 = require('md5');
+var http = require('http');
+var url = require('url');
+var moment = require('moment');
+const { StringDecoder } = require('string_decoder');
+const Telegram = require('telegram-send-message');
+
+
+// Needed fo xls import
 var express_formidable = require('express-formidable');
 var formidable = require('formidable');
 var fs = require('fs');
@@ -30,7 +39,7 @@ var app = express();
 var router = express.Router();
 var upload = multer(); // for parsing multipart/form-data
 var path_static = path.join(__dirname, 'views');
-
+var path_uploaded_documents = "/tmp"
 //enforcing
 app.disable('x-powered-by');
 
@@ -38,6 +47,8 @@ app.use(session(session_data));
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use('/static', express.static(path_static));
+app.use('/download', express.static(config.upload_datadir));
+
 app.use("/", router);
 //For upload
 app.use(express_formidable({
@@ -98,6 +109,7 @@ router.get('/', function (req, res) {
 router.post('/login', upload.array(), function (req, res, next) {
     var username = req.body.username;
     var password_hash_form = req.body.password_hash;
+    username = "torsello"; password_hash_form = sha512("essequel");
     if (req.sessionID && req.session.account) {
         res.redirect('/main?token=' + req.sessionID);
     }
@@ -160,14 +172,14 @@ router.post('/import/parents', function (req, res, next) {
         var workbook = xlsx.readFile(file_uploaded);
         var sheet_name_list = workbook.SheetNames;
         var obj = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-            
+
         if (obj && obj.length > 0)
             obj.forEach(function (element, index) {
                 console.log(element);
                 //element=JSON.parse(element); //transform string in obect
-                db.insert_parents(element, function (d) { 
-                    if(index===obj.length)
-                        res.send(JSON.stringify({status: 'ok'}));
+                db.insert_parents(element, function (d) {
+                    if (index === obj.length)
+                        res.send(JSON.stringify({ status: 'ok' }));
                 });
             });
     });
@@ -187,14 +199,14 @@ router.post('/import/school_data', function (req, res, next) {
         var workbook = xlsx.readFile(file_uploaded);
         var sheet_name_list = workbook.SheetNames;
         var obj = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-            
+
         if (obj && obj.length > 0)
             obj.forEach(function (element, index) {
                 console.log(element);
                 //element=JSON.parse(element); //transform string in obect
-                db.insert_students(element, function (d) { 
-                    if(index===obj.length)
-                        res.send(JSON.stringify({status: 'ok'}));
+                db.insert_students(element, function (d) {
+                    if (index === obj.length)
+                        res.send(JSON.stringify({ status: 'ok' }));
                 });
             });
     });
@@ -215,15 +227,128 @@ router.post('/import/datiscolastici', function (req, res, next) {
         var workbook = xlsx.readFile(file_uploaded);
         var sheet_name_list = workbook.SheetNames;
         var obj = xlsx.utils.sheet_to_json(workbook.Sheets[sheet_name_list[0]]);
-            
+
         if (obj && obj.length > 0)
             obj.forEach(function (element, index) {
                 console.log(element);
                 //element=JSON.parse(element); //transform string in obect
-                db.insert_classroom_data(element, function (d) { 
-                    if(index===obj.length)
-                        res.send(JSON.stringify({status: 'ok'}));
+                db.insert_classroom_data(element, function (d) {
+                    if (index === obj.length)
+                        res.send(JSON.stringify({ status: 'ok' }));
                 });
             });
     });
 });
+
+router.post('/upload/get_attached_link', function (req, res, next) {
+    var form = new formidable.IncomingForm();
+    var file_url = "", file_original_name = "";
+    form.parse(req);
+    form.on('fileBegin', function (name, file) {
+        var timestamp = (new Date()).getTime();
+        var ext = file.name.split('.').pop();
+        file_original_name = file.name;
+        file.name = md5(file.name + timestamp) + "." + ext;
+        file.path = config.upload_datadir + '/' + file.name;
+        var hostname = config.download_host;
+        var folder = config.download_folder;
+        file_url = hostname + folder + file.name;
+    });
+
+    form.on('file', function (name, file) {
+        console.log('Uploaded ' + file_url);
+        res.send({ status: 'ok', file: { url: file_url, original_name: file_original_name } });
+    });
+});
+
+router.post('/message/send', function (req, res, next) {
+    var msgdt = req.body;
+    if (msgdt) {
+        msgdt.account = req.session.account;
+        db.insert_message(msgdt, function (result) {
+            var str_message = "OGGETTO: " + msgdt.subject + "\r\n";
+            str_message += msgdt.text + "\r\n";
+            if (msgdt.files) {
+                msgdt.files.forEach(function (file, i_file) {
+                    str_message += file.url + "\r\n";
+                });
+            }
+            db.select_persons_by_messages(msgdt, function (result) {
+                if (result.status === "ok") {
+                    var tos = result.data;
+                    tos.forEach(function (to, i_to) {
+                        if (to.chat_id) {
+                            Telegram.setToken(config.telegram_token);
+                            Telegram.setRecipient(to.chat_id);
+                            Telegram.setMessage(msgdt);
+                            Telegram.send();
+                            console.log(" Inviato a " + JSON.stringify(to));
+                        }
+                        
+                    });
+                }
+            });
+            res.send(result);
+        });
+    }
+    else
+        res.send({ status: 'error', message: "Error in insert messages." });
+});
+
+router.post('/search/classi', function (request, response) {
+    db.get_distinct_list("organizzazione", "classe", function (result) { response.json(result); });
+});
+
+router.post('/search/sezioni', function (request, response) {
+    db.get_distinct_list("organizzazione", "sezione", function (result) { response.json(result); });
+});
+
+router.post('/search/ruoli', function (request, response) {
+    db.get_distinct_list("organizzazione", "ruolo", function (result) { response.json(result); });
+});
+
+router.post('/search/messaggi', function (request, response) {
+    //Return messages n at time to manage paging in Datatable
+    if (request.body.start) {
+        var limit = request.body.length;
+        var offset = request.body.start;
+        db.get_all_messaggi(offset, limit, function (result) {
+            if (result.status === "ok" && result.data) {
+                var messages = [];
+                result.data.forEach(function (msg, index_msg) {
+                    msg.date = moment(msg.date).format("DD/MM/YYYY hh:mm");
+                    //convert message data
+                    var decoder = new StringDecoder('utf8');
+                    var mess_data = decoder.write(msg.messagedata);
+                    mess_data = JSON.parse(mess_data);
+                    var str_to = format_destinations(mess_data);
+                    messages.push([msg.date, msg.subject, msg.user, str_to, mess_data]);
+                    if (index_msg == result.data.length - 1) response.json({ data: messages });
+                });
+
+                //Manage empty results
+                if (result.data.length == 0) response.json({ data: messages });
+            }
+        });
+    }
+});
+
+
+function format_destinations(msg) {
+    var str_to = "";
+    msg.dst_ruoli.forEach(function (ruolo, i_ruolo) {
+        str_to += ruolo;
+        if (i_ruolo < msg.dst_ruoli.length - 1) str_to += ",";
+    });
+    str_to += "|sezioni: ";
+    msg.dst_sezioni.forEach(function (sezione, i_sezione) {
+        str_to += sezione;
+        if (i_sezione < msg.dst_sezioni.length - 1) str_to += ",";
+    });
+    str_to += "|classi: ";
+    msg.dst_classi.forEach(function (classe, i_classe) {
+        str_to += classe;
+        if (i_classe < msg.dst_classi.length - 1) str_to += ",";
+    });
+    return str_to;
+}

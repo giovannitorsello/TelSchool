@@ -22,7 +22,8 @@ function load_components() {
     insert_component('#link_modal_anagrafiche_genitori', '#anagrafiche_genitori', '#main_container');
     insert_component('#link_modal_anagrafiche_dipendenti', '#anagrafiche_dipendenti', '#main_container');
 
-    //View ultimi messaggi
+    //Gestione messaggi
+    insert_component('#link_modal_nuovo_messaggio', '#nuovo_messaggio', '#main_container', false);
     insert_component('#link_messages_sent_view', '#messages_sent_view', '#main_container', false);
 
     bind_ajax_events();
@@ -47,6 +48,8 @@ function bind_ajax_events() {
         $(".modal_wait_for_search").hide();
         $("#find").prop("disabled",false);
     });
+
+    
 }
 
 function insert_component(link_id, component_id, father_id, bhead = true) {
@@ -65,4 +68,15 @@ function insert_component(link_id, component_id, father_id, bhead = true) {
     else {
         main_container.appendChild(component);
     }
+}
+
+function get_component(link_id, component_id) {
+    var link = document.querySelector(link_id);
+    if (!link) { console.log("Resource unknown. ->" + link_id); return }
+    var component_link = link.import.querySelector(component_id);
+    if (!component_link) { console.log("Component unknown. Wrong id. ->" + component_id); return }
+    var component = document.importNode(component_link, true);
+    if (!component) { console.log("Component empty. No tags in the code."); return }
+    
+    return component
 }
