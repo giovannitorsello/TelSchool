@@ -25,7 +25,7 @@ var xlsx_json = require('xlsx-parse-json');
 var config = require('./config.js');
 var global = require('./global.js');
 var db = require('./database.js');
-var telegram=require("./telegram.js");
+var telegram = require("./telegram.js");
 //var mail = require('./mail.js');
 
 //upload folder
@@ -66,17 +66,17 @@ app.listen(8088, function () {
     db.start_connection();
     //Telegram
     telegram.getMe();
-    
+
 });
 
 router.post('/insert/customer', function (request, response) {
     var rb = request.body;
     data = [rb.nome, rb.cognome, rb.dat_nas, rb.com_nas, rb.pro_nas, rb.res_com,
     rb.res_ind, rb.res_cap, rb.res_pro, rb.cod_fisc, rb.role, rb.email, rb.phone, "", "", ""];
-    db.insert_persona(data, function(result){
-        if(result.status==="ok"){
-            var org=[result.lastid, rb.cod_fisc, "gen", "gen", rb.role];
-            db.insert_classroom(org, function(result){response.send(result);});        
+    db.insert_persona(data, function (result) {
+        if (result.status === "ok") {
+            var org = [result.lastid, rb.cod_fisc, "gen", "gen", rb.role];
+            db.insert_classroom(org, function (result) { response.send(result); });
         }
     });
 });
@@ -270,42 +270,82 @@ router.post('/upload/get_attached_link', function (req, res, next) {
     });
 });
 
-router.post('/message/send', function (req, res, next) {
-    var msgdt = req.body;
+router.post('/message/send', function (request, response) {
+        
+    var msgdt = request.body;    
     if (msgdt) {
-        msgdt.account = req.session.account;
-        db.insert_message(msgdt, function (result) {
-            var str_message = "OGGETTO: " + msgdt.subject+"|" ;
-            str_message += msgdt.text+"|";
-            if (msgdt.attached_files) {
-                msgdt.attached_files.forEach(function (file, i_file) {
-                    str_message += "<a href=\""+file.url+"\">"+file.url+ "</a>";
+        
+        //FORMAT THE MESSAGE        
+        msgdt.account = request.session.account;
+        
+        var msg_tel={}
+        
+        msg_tel.disable_web_page_preview="true";
+
+        //Formatta il testo usando lo standard HTML
+        
+        msg_tel.parse_mode="HTML";
+        var str_msg="";
+        str_msg+="<b>OGGETTO: " + msgdt.subject+"</b>"+"\r\n";               
+        str_msg+=msgdt.text+"\r\n";
+
+        if (msgdt.attached_files) {
+            msgdt.attached_files.forEach(function (file, i_file) {
+                var attach_name=file.original_name.replace(/\.[^/.]+$/, "");
+                str_msg+="<a href='"+file.url+"'>"+attach_name+"</a>\r\n";                                 
+            });
+        }
+        str_msg+="\r\n\r\n";
+        str_msg+="<a href='http://www.liceovallone.gov.it'>"+config.author_msg+"</a>\r\n";
+        msg_tel.text=str_msg;              
+        //Formatta il testo usando lo standard Markdown
+        /*msg_tel.parse_mode="markdown";
+        var str_msg="";
+        str_msg+="__"+"OGGETTO: " + msgdt.subject+"__ \r\n";               
+        str_msg+=msgdt.text+"\r\n";
+
+        if (msgdt.attached_files) {
+            msgdt.attached_files.forEach(function (file, i_file) {
+                var attach_name=file.original_name.replace(/\.[^/.]+$/, "");
+                str_msg+="- __["+attach_name+"]("+file.url+")__ -\r\n";                
+            });
+        }
+        str_msg+="\r\n\r\n";
+        str_msg+="- __["+config.author_msg+"]("+config.author_site+")__ -\r\n";
+        str_msg+=config.author_msg+"\r\n";
+        msg_tel.text=str_msg;
+        */
+        
+        db.select_persons_by_messages(msgdt, function (result) {
+            if (result.status === "ok") {
+                var tos = result.data;
+                tos.forEach(function (to, i_to) {
+                    if (to.chat_id) {
+                        msg_tel.chat_id=to.chat_id;
+                        
+                        telegram.send_message(msg_tel, function (res_tel) {
+                            if (res_tel.status === "ok") {
+                                console.log(" Inviato a " + JSON.stringify(to));                                
+                                
+                            }                            
+                        });
+
+                    }
+                    if(i_to===tos.length-1) 
+                        response.json({status: "ok", msg: "Inviati n."+tos.length+ " messaggi correttamente."});
                 });
             }
-            db.select_persons_by_messages(msgdt, function (result) {
-                if (result.status === "ok") {
-                    var tos = result.data;
-                    tos.forEach(function (to, i_to) {
-                        if (to.chat_id) {
-                            telegram.send_message(to.chat_id, str_message, function (res_tel){
-                                if(res_tel.status==="ok") {
-                                    console.log(" Inviato a " + JSON.stringify(to));
-                                    res.send({status: "ok", msg:"Messaggio inviato"});
-                                }
-                                else {
-                                    res.send({status: "error", msg:"Messaggio non inviato"});
-                                }
-                            });                            
-                            
-                        }
-                        
-                    });
-                }
-            });            
         });
+
+        /*
+                db.insert_message(msgdt, function (result) {
+                    
+        
+                });
+        */ 
     }
-    else
-        res.send({ status: 'error', message: "Error in insert messages." });
+    //else
+    //    res.send({ status: 'error', message: "Error in insert messages." });        
 });
 
 router.post('/search/classi', function (request, response) {
@@ -349,26 +389,26 @@ router.post('/search/messaggi', function (request, response) {
 
 function format_destinations(msg) {
     var str_to = "";
-    
-    if(msg.dst_ruoli)
-    msg.dst_ruoli.forEach(function (ruolo, i_ruolo) {
-        str_to += ruolo;
-        if (i_ruolo < msg.dst_ruoli.length - 1) str_to += ",";
-    });
+
+    if (msg.dst_ruoli)
+        msg.dst_ruoli.forEach(function (ruolo, i_ruolo) {
+            str_to += ruolo;
+            if (i_ruolo < msg.dst_ruoli.length - 1) str_to += ",";
+        });
     str_to += "|sezioni: ";
 
-    if(msg.dst_sezioni)
-    msg.dst_sezioni.forEach(function (sezione, i_sezione) {
-        str_to += sezione;
-        if (i_sezione < msg.dst_sezioni.length - 1) str_to += ",";
-    });
+    if (msg.dst_sezioni)
+        msg.dst_sezioni.forEach(function (sezione, i_sezione) {
+            str_to += sezione;
+            if (i_sezione < msg.dst_sezioni.length - 1) str_to += ",";
+        });
     str_to += "|classi: ";
 
-    if(msg.dst_classi)
-    msg.dst_classi.forEach(function (classe, i_classe) {
-        str_to += classe;
-        if (i_classe < msg.dst_classi.length - 1) str_to += ",";
-    });
+    if (msg.dst_classi)
+        msg.dst_classi.forEach(function (classe, i_classe) {
+            str_to += classe;
+            if (i_classe < msg.dst_classi.length - 1) str_to += ",";
+        });
     return str_to;
 }
 

@@ -80,19 +80,15 @@ api.getMe()
     .catch(function (err) { console.log(err); });
 
 module.exports = {
-    send_message: function (chatid, str_message, callback) {
-        api.sendMessage({
-            chat_id: chatid,
-            parse_mode: "HTML",
-            text: str_message
-        }, function (err) {
+    send_message: function (msg, callback) {
+        api.sendMessage(msg, function (err) {
             if (err) {
                 console.log(err);
-                callback({ status: "error", data: err });
+                callback({status: "error", data: err });
             }
             else {
                 console.log("Messaggio inviato");
-                callback({ status: "ok", data: str_message });
+                callback({status: "ok", data: msg });
             }
         });
     },
